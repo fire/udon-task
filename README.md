@@ -4,15 +4,13 @@
 
 This package enables the execution of Udon from a separate thread.
 
-Udonを別スレッドで実行可能にするやつ。
-
+**Machine translated from Japanese to English.**
 
 ## Installation
-[Iwashi Packages](https://vpm.iwa.si/)を開いて「Add to VCC」を押してVCCからUdonTaskを追加します。
-
+Open [Iwashi Packages](https://vpm.iwa.si/) and click "Add to VCC" to add UdonTask from VCC.
 
 ## Usage
-### 通常
+### Basic
 ```csharp
 using UnityEngine;
 using UdonSharp;
@@ -28,18 +26,18 @@ public class UdonTaskSample : UdonSharpBehaviour
 
   public void OnProcess()
   {
-    /* ここに重たい処理を書く。
-     * メインスレッドでしか触れないものは当然触れません。要注意！ */
+    /* Write heavy processing here.
+     * Note that you cannot touch anything that can only be accessed from the main thread. Be careful! */
   }
 
   public void OnComplete()
   {
-    Debug.Log("完了！");
+    Debug.Log("Completed!");
   }
 }
 ```
 
-### 戻り値・引数付き
+### With Return Values and Arguments
 ```csharp
 using UnityEngine;
 using UdonSharp;
@@ -50,14 +48,14 @@ public class UdonTaskSample : UdonSharpBehaviour
 {
 	public void ExecuteTask()
 	{
-		UdonTask.New((IUdonEventReceiver)this, nameof(OnProcess), nameof(OnComplete), "onProcessContainer", "onReturnContainer", "イワシ");
+		UdonTask.New((IUdonEventReceiver)this, nameof(OnProcess), nameof(OnComplete), "onProcessContainer", "onReturnContainer", "Iwashi");
 	}
 
 	public UdonTaskContainer OnProcess(UdonTaskContainer onProcessContainer)
 	{
 		var container = UdonTaskContainer.New();
 		var str = onProcessContainer.GetVariable<string>(0);
-		container = container.AddVariable($"{str}ーモ");
+		container = container.AddVariable($"{str}-mo");
 		Debug.Log(container.GetVariable<string>(container.Count() - 1));
 		return container;
 	}
@@ -69,27 +67,24 @@ public class UdonTaskSample : UdonSharpBehaviour
 }
 ```
 
-- 第1引数にIUdonEventReceiverを指定します。(IUdonEventReceiver)thisを使うと自身のUdonSharpBehaviourを設定できます。
-- 10秒以上かかる処理はUdonが死ぬので実行できません。9.9秒くらいを測って分割するようにしてください。
-- 引数付きを利用する場合は関数の引数は必ずそのスクリプト内で一意の名前になるようにしてください。
-  - UdonTask.Newする際に引数の名前を指定する必要があります。
-
+- Specify `IUdonEventReceiver` as the first argument. You can set your own `UdonSharpBehaviour` by using `(IUdonEventReceiver)this`.
+- Processes that take more than 10 seconds will cause Udon to crash, so they cannot be executed. Try to split them into chunks of around 9.9 seconds.
+- When using arguments, ensure that function arguments have unique names within the script.
+  - You need to specify the argument names when calling `UdonTask.New`.
 
 ## Samples
-UnityのPackageManagerのUdonTask→Samplesからサンプルシーンをインポートできます。
+You can import sample scenes from Unity's Package Manager under UdonTask → Samples.
 
-サンプルシーンでは[Base64エンコード](https://gist.githubusercontent.com/chiugame/76a08e9e2cb0735b1c7ff848e335b30f/raw/b956b266e4f0c35b8fde9edb284fe7efc300ba05/SamplePictures.txt)された17枚の画像データを高速で読み込むテスト等ができます。
+In the sample scenes, you can test loading 17 images encoded in [Base64](https://gist.githubusercontent.com/chiugame/76a08e9e2cb0735b1c7ff848e335b30f/raw/b956b266e4f0c35b8fde9edb284fe7efc300ba05/SamplePictures.txt) at high speed.
 
-[テストワールド](https://vrchat.com/home/world/wrld_687f009c-fffb-4532-bb55-c075788a33b1)
-
+[Test World](https://vrchat.com/home/world/wrld_687f009c-fffb-4532-bb55-c075788a33b1)
 
 ## TIPS
-- 別スレッドからSendCustomEventDelayedSeconds/SendCustomEventDelayedFramesを呼ぶとメインスレッドを呼び出せる。
-- 別スレッドで触ってるフィールドをメインスレッドで触るとタイミング次第でUdonが死ぬ。
-  - そもそもタイミング次第で死ぬ。UdonVMのスタックがずれるっぽい？特定のフィールドが別の型に化けるとか起きる。
-- 別スレッドからでもDebug.Logの出力は可能。
-
+- Calling `SendCustomEventDelayedSeconds`/`SendCustomEventDelayedFrames` from a separate thread can invoke the main thread.
+- If you access fields being touched by a separate thread from the main thread, Udon may crash depending on the timing.
+  - It might crash due to timing issues. The UdonVM stack seems to get misaligned? Specific fields might transform into different types.
+- You can output `Debug.Log` even from a separate thread.
 
 ## Note
-- Harmonyを用いてスレッドセーフなUdonログの出力を実装。
-- スレッドセーフな疑似ランダム生成器クラスを実装。
+- Implemented thread-safe Udon log output using Harmony.
+- Implemented a thread-safe pseudo-random generator class.
